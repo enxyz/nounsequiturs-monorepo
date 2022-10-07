@@ -10,6 +10,7 @@
   "scripts": {
     "clean": "rimraf dist tsconfig.build.tsbuildinfo",
     "build": "yarn build:sol --force && yarn build:ts && yarn build:declarations",
+    "build:abi": "npx hardhat export-abi",
     "build:ts": "tsc -p tsconfig.build.json",
     "build:sol": "npx hardhat compile",
     "build:declarations": "shx cp typechain/*.d.ts dist/typechain",
@@ -20,8 +21,8 @@
     "task:mint": "npx hardhat mint",
     "task:populate-descriptor": "npx hardhat populate-descriptor",
     "task:run-local": "npx hardhat run-local",
-    "test": "npx hardhat test",
-    "coverage": "npx hardhat coverage",
+    "test": "npx hardhat test tests/*",
+    "coverage": "npx hardhat coverage  --testfiles 'tests/**'",
     "prepare": "yarn build"
   },
   "devDependencies": {
@@ -37,12 +38,12 @@
     "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.4.4",
     "hardhat": "^2.9.6",
-    "hardhat-abi-exporter": "^2.9.0",
+    "hardhat-abi-exporter": "^2.10.0",
     "hardhat-gas-reporter": "^1.0.8",
     "prettier-plugin-solidity": "^1.0.0-beta.12",
     "prompt": "^1.1.0",
     "shx": "^0.3.3",
-    "solidity-coverage": "0.7.21",
+    "solidity-coverage": "^0.8.2",
     "ts-node": "^10.0.0",
     "typechain": "^8.0.0"
   },

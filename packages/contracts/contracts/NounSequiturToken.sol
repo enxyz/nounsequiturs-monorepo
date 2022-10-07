@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Interface for Generic Token
+/// @title Interface for NounSequiturToken
+/// Based on NounsDAO
+
+// @krel img here
 
 pragma solidity ^0.8.6;
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
-import { IToken } from './interfaces/IToken.sol';
+import { ERC721Checkpointable } from './base/ERC721Checkpointable.sol';
+import { INounSequiturToken } from './interfaces/INounSequiturToken.sol';
 // `_safeMint` and `_mint` contain an additional `creator` argument and
 // emit two `Transfer` logs, rather than one
 import { ERC721 } from './base/ERC721.sol';
@@ -13,21 +17,21 @@ import { IERC721 } from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import { IProxyRegistry } from './external/opensea/IProxyRegistry.sol';
 
 // TODO: @enx ERC721Checkpointable ?
-contract Token is IToken, Ownable, ERC721 {
-    // Admin address
-    address public admin;
+contract NounSequiturToken is INounSequiturToken, Ownable, ERC721Checkpointable {
+    // The noun sequiturs DAO address (creators org)
+    address public soundersDAO;
 
-    // An address who has permissions to mint
+    // An address who has permissions to mint NounSequiturs
     address public minter;
 
     // Whether the minter can be updated
     bool public isMinterLocked;
 
-    // The internal ID tracker
-    uint256 private _currentId;
+    // The internal noun sequitur ID tracker
+    uint256 private _currentNounSequiturId;
 
     // IPFS content hash of contract-level metadata
-    string private _contractURIHash = 'QID';
+    string private _contractURIHash = 'QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX'; // TODO: @enx
 
     // OpenSea's Proxy Registry
     IProxyRegistry public proxyRegistry;
@@ -41,6 +45,14 @@ contract Token is IToken, Ownable, ERC721 {
     }
 
     /**
+     * @notice Require that the sender is the Noun Sequitur Founders DAO.
+     */
+    modifier onlySoundersDAO() {
+        require(msg.sender == soundersDAO, 'Sender is not the Noun Sequitur Founders DAO');
+        _;
+    }
+
+    /**
      * @notice Require that the sender is the minter.
      */
     modifier onlyMinter() {
@@ -49,15 +61,15 @@ contract Token is IToken, Ownable, ERC721 {
     }
 
     /**
-     * @notice Construct a new Token contract.
+     * @notice Construct a new NounSequiturToken contract.
      * @param _proxyRegistry The address of the OpenSea proxy registry.
      */
     constructor(
-        address _admin,
+        address _soundersDAO,
         address _minter,
         IProxyRegistry _proxyRegistry
-    ) ERC721('Token Name', 'TOKEN') {
-        admin = _admin;
+    ) ERC721('Noun Sequiturs', 'NOUNSEQUITER') {
+        soundersDAO = _soundersDAO;
         minter = _minter;
         proxyRegistry = _proxyRegistry;
     }
@@ -89,18 +101,34 @@ contract Token is IToken, Ownable, ERC721 {
     }
 
     /**
+     * @notice Mint a Noun Sequitur to the minter, along with a possible noun sequitur founders
+     * reward Noun Sequitur. Noun Sequitur Founders reward Noun Sequitur are minted every 10 Nouns, starting at 0,
+     * until 183 nounder Noun Sequiturs have been minted (5 years w/ 24 hour auctions).
      * @dev Call _mintTo with the to address(es).
      */
     function mint() public override onlyMinter returns (uint256) {
-        return _mintTo(minter, _currentId++);
+        if (_currentNounSequiturId <= 1820 && _currentNounSequiturId % 10 == 0) {
+            _mintTo(soundersDAO, _currentNounSequiturId++);
+        }
+        return _mintTo(minter, _currentNounSequiturId++);
     }
 
     /**
-     * @notice Burn a Token.
+     * @notice Burn a Noun Sequitur.
      */
     function burn(uint256 tokenId) public override onlyMinter {
         _burn(tokenId);
-        emit TokenBurned(tokenId);
+        emit NounSequiturBurned(tokenId);
+    }
+
+    /**
+     * @notice Set the sounders DAO.
+     * @dev Only callable by the nounders DAO when not locked.
+     */
+    function setNounSequiturFoundersDAO(address _soundersDAO) external override onlySoundersDAO {
+        soundersDAO = _soundersDAO;
+
+        emit NounSequiturFoundersDAOUpdated(_soundersDAO);
     }
 
     /**
@@ -124,13 +152,13 @@ contract Token is IToken, Ownable, ERC721 {
     }
 
     /**
-     * @notice Mint a Token with `tokenId` to the provided `to` address.
+     * @notice Mint a Noun Sequitur with `nounSequiturId` to the provided `to` address.
      */
-    function _mintTo(address to, uint256 tokenId) internal returns (uint256) {
-        _mint(owner(), to, tokenId);
+    function _mintTo(address to, uint256 nounSequiturId) internal returns (uint256) {
+        _mint(owner(), to, nounSequiturId);
 
-        emit TokenCreated(tokenId);
+        emit NounSequiturCreated(nounSequiturId);
 
-        return tokenId;
+        return nounSequiturId;
     }
 }

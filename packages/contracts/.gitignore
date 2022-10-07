@@ -14,6 +14,7 @@ logs
 coverage/
 coverage.json
 
+# Reference contracts
 abi/@openzeppelin
 abi/contracts/base
 abi/contracts/external
@@ -21,6 +22,13 @@ abi/contracts/governance
 abi/contracts/interfaces
 abi/contracts/proxies
 abi/contracts/test
+abi/readable/@openzeppelin
+abi/readable/contracts/base
+abi/readable/contracts/external
+abi/readable/contracts/governance
+abi/readable/contracts/interfaces
+abi/readable/contracts/proxies
+abi/readable/contracts/test
 
 # Foundry
 foundry-out

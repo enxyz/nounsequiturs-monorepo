@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { HardhatUserConfig } from 'hardhat/config';
-// import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-etherscan';
 import 'solidity-coverage';
@@ -10,7 +10,7 @@ import '@openzeppelin/hardhat-upgrades';
 import 'hardhat-gas-reporter';
 import './tasks';
 
-// dotenv.config();
+dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -40,10 +40,19 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
   },
-  abiExporter: {
-    path: './abi',
-    clear: true,
-  },
+  abiExporter: [
+    {
+      path: './abi',
+      clear: true,
+      runOnCompile: true,
+    },
+    {
+      path: './abi/readable',
+      clear: true,
+      pretty: true,
+      runOnCompile: true,
+    },
+  ],
   typechain: {
     outDir: './typechain',
   },
