@@ -5,7 +5,7 @@
 
 // @krel img here
 
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.17;
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
 import { ERC721Enumerable } from './base/ERC721Enumerable.sol';
