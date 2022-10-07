@@ -8,7 +8,7 @@
 pragma solidity ^0.8.6;
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
-import { ERC721Checkpointable } from './base/ERC721Checkpointable.sol';
+import { ERC721Enumerable } from './base/ERC721Enumerable.sol';
 import { INounSequiturToken } from './interfaces/INounSequiturToken.sol';
 // `_safeMint` and `_mint` contain an additional `creator` argument and
 // emit two `Transfer` logs, rather than one
@@ -17,7 +17,7 @@ import { IERC721 } from '@openzeppelin/contracts/token/ERC721/IERC721.sol';
 import { IProxyRegistry } from './external/opensea/IProxyRegistry.sol';
 
 // TODO: @enx ERC721Checkpointable ?
-contract NounSequiturToken is INounSequiturToken, Ownable, ERC721Checkpointable {
+contract NounSequiturToken is INounSequiturToken, Ownable, ERC721Enumerable {
     // The noun sequiturs DAO address (creators org)
     address public soundersDAO;
 
@@ -156,7 +156,6 @@ contract NounSequiturToken is INounSequiturToken, Ownable, ERC721Checkpointable 
      */
     function _mintTo(address to, uint256 nounSequiturId) internal returns (uint256) {
         _mint(owner(), to, nounSequiturId);
-
         emit NounSequiturCreated(nounSequiturId);
 
         return nounSequiturId;

@@ -10,14 +10,14 @@ chai.use(solidity);
 const { expect } = chai;
 
 describe('NounSequiturToken', () => {
-  let nounSequiturToken: NounSequiturToken;
+  let nounSequitursToken: NounSequiturToken;
   let deployer: SignerWithAddress;
   let soundersDAO: SignerWithAddress;
   let snapshotId: number;
 
   before(async () => {
     [deployer, soundersDAO] = await ethers.getSigners();
-    nounSequiturToken = await deployNounSequiturToken(
+    nounSequitursToken = await deployNounSequiturToken(
       deployer,
       soundersDAO.address,
       deployer.address,
@@ -32,23 +32,36 @@ describe('NounSequiturToken', () => {
     await ethers.provider.send('evm_revert', [snapshotId]);
   });
 
-  // it('should allow the minter to mint a noun to itself and a reward noun to the soundersDAO', async () => {});
+  // it('should allow the minter to mint a Noun Sequitur to itself and a reward noun to the soundersDAO', async () => {});
+  it('should allow the minter to mint a Noun Sequitur to itself and a reward noun to the soundersDAO', async () => {
+    const receipt = await (await nounSequitursToken.mint()).wait();
+
+    const [, , soundersNonSequiturCreated, , , ownersNonSequiturCreated] = receipt.events || [];
+
+    expect(await nounSequitursToken.ownerOf(0)).to.eq(soundersDAO.address);
+    expect(soundersNonSequiturCreated?.event).to.eq('NounSequiturCreated');
+    expect(soundersNonSequiturCreated?.args?.tokenId).to.eq(0);
+
+    expect(await nounSequitursToken.ownerOf(1)).to.eq(deployer.address);
+    expect(ownersNonSequiturCreated?.event).to.eq('NounSequiturCreated');
+    expect(ownersNonSequiturCreated?.args?.tokenId).to.eq(1);
+  });
 
   it('should set symbol', async () => {
-    expect(await nounSequiturToken.symbol()).to.eq('NOUNSEQUITER');
+    expect(await nounSequitursToken.symbol()).to.eq('NOUNSEQUITER');
   });
 
   it('should set name', async () => {
-    expect(await nounSequiturToken.name()).to.eq('Noun Sequiturs');
+    expect(await nounSequitursToken.name()).to.eq('Noun Sequiturs');
   });
 
   it('should allow minter to mint a noun to itself', async () => {
-    await (await nounSequiturToken.mint()).wait();
+    await (await nounSequitursToken.mint()).wait();
 
-    const receipt = await (await nounSequiturToken.mint()).wait();
-    const nounSequiturCreated = receipt.events?.[3];
+    const receipt = await (await nounSequitursToken.mint()).wait();
+    const nounSequiturCreated = receipt.events?.[2];
 
-    expect(await nounSequiturToken.ownerOf(2)).to.eq(deployer.address);
+    expect(await nounSequitursToken.ownerOf(2)).to.eq(deployer.address);
     expect(nounSequiturCreated?.event).to.eq('NounSequiturCreated');
     expect(nounSequiturCreated?.args?.tokenId).to.eq(2);
   });
@@ -56,47 +69,47 @@ describe('NounSequiturToken', () => {
   it('should emit two transfer logs on mint', async () => {
     const [, , creator, minter] = await ethers.getSigners();
 
-    await (await nounSequiturToken.mint()).wait();
+    await (await nounSequitursToken.mint()).wait();
 
-    await (await nounSequiturToken.setMinter(minter.address)).wait();
-    await (await nounSequiturToken.transferOwnership(creator.address)).wait();
+    await (await nounSequitursToken.setMinter(minter.address)).wait();
+    await (await nounSequitursToken.transferOwnership(creator.address)).wait();
 
-    const tx = nounSequiturToken.connect(minter).mint();
+    const tx = nounSequitursToken.connect(minter).mint();
 
     await expect(tx)
-      .to.emit(nounSequiturToken, 'Transfer')
+      .to.emit(nounSequitursToken, 'Transfer')
       .withArgs(constants.AddressZero, creator.address, 2);
     await expect(tx)
-      .to.emit(nounSequiturToken, 'Transfer')
+      .to.emit(nounSequitursToken, 'Transfer')
       .withArgs(creator.address, minter.address, 2);
   });
 
   it('should allow minter to burn a noun sequitur', async () => {
-    await (await nounSequiturToken.mint()).wait();
+    await (await nounSequitursToken.mint()).wait();
 
-    const tx = nounSequiturToken.burn(0);
-    await expect(tx).to.emit(nounSequiturToken, 'NounSequiturBurned').withArgs(0);
+    const tx = nounSequitursToken.burn(0);
+    await expect(tx).to.emit(nounSequitursToken, 'NounSequiturBurned').withArgs(0);
   });
 
   it('should revert on non-minter mint', async () => {
-    const account0AsNounErc721Account = nounSequiturToken.connect(soundersDAO);
+    const account0AsNounErc721Account = nounSequitursToken.connect(soundersDAO);
     await expect(account0AsNounErc721Account.mint()).to.be.reverted;
   });
 
   describe('contractURI', async () => {
     it('should return correct contractURI', async () => {
-      expect(await nounSequiturToken.contractURI()).to.eq(
+      expect(await nounSequitursToken.contractURI()).to.eq(
         'ipfs://QmZi1n79FqWt2tTLwCqiy6nLM6xLGRsEPQ5JmReJQKNNzX', // TODO: @enx
       );
     });
     it('should allow owner to set contractURI', async () => {
-      await nounSequiturToken.setContractURIHash('ABC123');
-      expect(await nounSequiturToken.contractURI()).to.eq('ipfs://ABC123');
+      await nounSequitursToken.setContractURIHash('ABC123');
+      expect(await nounSequitursToken.contractURI()).to.eq('ipfs://ABC123');
     });
     it('should not allow non owner to set contractURI', async () => {
       const [, nonOwner] = await ethers.getSigners();
       await expect(
-        nounSequiturToken.connect(nonOwner).setContractURIHash('BAD'),
+        nounSequitursToken.connect(nonOwner).setContractURIHash('BAD'),
       ).to.be.revertedWith('Ownable: caller is not the owner');
     });
   });
