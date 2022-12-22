@@ -1,15 +1,5 @@
 # Contracts Monorepo Template
 
-## Packages
-
-### contracts
-
-The [contracts](packages/contracts) is the suite of Solidity contracts
-
-### webapp
-
-The [webapp](packages/webapp) is the frontend for interacting with contracts
-
 ## Quickstart
 
 ### Install dependencies
@@ -35,6 +25,19 @@ yarn lint
 ```sh
 yarn format
 ```
+
+## Packages
+
+`cd` into the package directory to run commands for that package.
+For example, to run the commands for the `contracts` package, `cd` into the `packages/contracts` directory first.
+
+### contracts
+
+The [contracts](packages/contracts) is the suite of Solidity contracts
+
+### webapp
+
+The [webapp](packages/webapp) is the frontend for interacting with contracts
 
 # References
 

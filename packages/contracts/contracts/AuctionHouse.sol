@@ -1,5 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
+/// @title The Nouns Sequitur auction house
+
+// LICENSE
+// This file is a modified version of the Nouns AuctionHouse.sol contract.
+//
+// NounsAuctionHouse.sol is a modified version of Zora's AuctionHouse.sol:
+// https://github.com/ourzora/auction-house/blob/54a12ec1a6cf562e49f0a4917990474b11350a2d/contracts/AuctionHouse.sol
+//
+// AuctionHouse.sol source code Copyright Zora licensed under the GPL-3.0 license.
+// With modifications by Nounders DAO.
+
 pragma solidity ^0.8.17;
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
@@ -48,10 +59,6 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
         uint8 _minBidIncrementPercentage,
         uint256 _duration
     ) {
-        // __Pausable_init();
-        // __ReentrancyGuard_init();
-        // __Ownable_init();
-
         _pause();
 
         nounSequiturs = _nounSequiturs;
