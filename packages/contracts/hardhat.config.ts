@@ -6,7 +6,6 @@ import '@nomiclabs/hardhat-etherscan';
 import 'solidity-coverage';
 import '@typechain/hardhat';
 import 'hardhat-abi-exporter';
-import '@openzeppelin/hardhat-upgrades';
 import 'hardhat-gas-reporter';
 import './tasks';
 

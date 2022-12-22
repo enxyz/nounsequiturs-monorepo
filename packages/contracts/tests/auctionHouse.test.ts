@@ -14,12 +14,15 @@ import {
 } from '../typechain';
 import { deployNounSequiturToken, deployWeth } from './utils';
 
+chai.use(solidity);
+const { expect } = chai;
+
 describe('auctionHouse', () => {
   let auctionHouse: AuctionHouse;
-  let nounsToken: NounSequiturToken;
+  let nounsSequiturToken: NounSequiturToken;
   let weth: WETH;
   let deployer: SignerWithAddress;
-  let noundersDAO: SignerWithAddress;
+  let soundersDAO: SignerWithAddress;
   let bidderA: SignerWithAddress;
   let bidderB: SignerWithAddress;
   let snapshotId: number;
@@ -32,7 +35,7 @@ describe('auctionHouse', () => {
   async function deploy(deployer?: SignerWithAddress) {
     const auctionHouseFactory = await ethers.getContractFactory('AuctionHouse', deployer);
     return auctionHouseFactory.deploy(
-      nounsToken.address,
+      nounsSequiturToken.address,
       weth.address,
       TIME_BUFFER,
       RESERVE_PRICE,
@@ -42,13 +45,17 @@ describe('auctionHouse', () => {
   }
 
   before(async () => {
-    [deployer, noundersDAO, bidderA, bidderB] = await ethers.getSigners();
+    [deployer, soundersDAO, bidderA, bidderB] = await ethers.getSigners();
 
-    nounsToken = await deployNounSequiturToken(deployer, noundersDAO.address, deployer.address);
+    nounsSequiturToken = await deployNounSequiturToken(
+      deployer,
+      soundersDAO.address,
+      deployer.address,
+    );
     weth = await deployWeth(deployer);
     auctionHouse = await deploy(deployer);
 
-    await nounsToken.setMinter(auctionHouse.address);
+    await nounsSequiturToken.setMinter(auctionHouse.address);
   });
 
   beforeEach(async () => {
@@ -61,7 +68,7 @@ describe('auctionHouse', () => {
 
   // deploy
 
-  it('should allow the noundersDAO to unpause the contract and create the first auction', async () => {
+  it('should allow the Sounders DAO to unpause the contract and create the first auction', async () => {
     const tx = await auctionHouse.unpause();
     await tx.wait();
 
@@ -139,7 +146,7 @@ describe('auctionHouse', () => {
     );
   });
 
-  it('should refund the previous bidder when the following user creates a bid', async () => {
+  it('should refund the previous bidder when another user creates a higher bid', async () => {
     await (await auctionHouse.unpause()).wait();
 
     const { tokenId } = await auctionHouse.auction();
@@ -186,9 +193,9 @@ describe('auctionHouse', () => {
   // settlement
   it('should revert if auction settlement is attempted while the auction is still active', async () => {});
 
-  it('should transfer the Noun to the highest bidder on auction settlement', async () => {});
+  it('should transfer the NounsSequitur to the highest bidder on auction settlement', async () => {});
 
-  it('should burn a Noun on auction settlement if no bids are received', async () => {});
+  it('should burn a NounsSequitur on auction settlement if no bids are received', async () => {});
 
   it('should emit `AuctionSettled` and `AuctionCreated` events if all conditions are met', async () => {
     await (await auctionHouse.unpause()).wait();
@@ -226,6 +233,8 @@ describe('auctionHouse', () => {
 
   // edge cases
   it('should not create a new auction if the auction house is paused and unpaused while an auction is ongoing', async () => {});
-  it('should create a new auction if the auction house is paused and unpaused after an auction is settled', async () => {});
+  it('should create a new auction if the auction house is paused and unpaused after an auction is settled', async () => {
+    // @enx - description implies auction is stopped when minter is updated
+  });
   it('should settle the current auction and pause the contract if the minter is updated while the auction house is unpaused', async () => {});
 });

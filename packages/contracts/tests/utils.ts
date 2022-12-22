@@ -3,6 +3,8 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
   NounSequiturToken,
   NounSequiturToken__factory as NounSequiturTokenFactory,
+  WETH,
+  WETH__factory as WethFactory,
 } from '../typechain';
 
 export type TestSigners = {
@@ -40,4 +42,10 @@ export const deployNounSequiturToken = async (
 
 export const address = (n: number): string => {
   return `0x${n.toString(16).padStart(40, '0')}`;
+};
+
+export const deployWeth = async (deployer?: SignerWithAddress): Promise<WETH> => {
+  const factory = new WethFactory(deployer || (await getSigners()).deployer);
+
+  return factory.deploy();
 };
