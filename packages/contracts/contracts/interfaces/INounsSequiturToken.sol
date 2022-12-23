@@ -14,7 +14,7 @@ interface INounsSequiturToken is IERC721 {
 
     event NounsSequiturBurned(uint256 indexed tokenId);
 
-    event NounsSequiturFoundersDAOUpdated(address noundersDAO);
+    event SoundersDAOUpdated(address soundersDAO);
 
     event MinterUpdated(address minter);
 
@@ -24,7 +24,7 @@ interface INounsSequiturToken is IERC721 {
 
     function burn(uint256 tokenId) external;
 
-    function setNounSequiturFoundersDAO(address noundersDAO) external;
+    function setSoundersDAO(address soundersDAO) external;
 
     function setMinter(address minter) external;
 

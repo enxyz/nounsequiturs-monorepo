@@ -1,5 +1,5 @@
 // import { default as NounsAuctionHouseABI } from '../abi/contracts/NounsAuctionHouse.sol/NounsAuctionHouse.json';
-import { ChainId, ContractDeployment, ContractName, DeployedContract } from './types';
+import { ChainId, ContractDeployment, ContractNames, DeployedContract } from './types';
 import { Interface } from 'ethers/lib/utils';
 import { task, types } from 'hardhat/config';
 import promptjs from 'prompt';
@@ -26,7 +26,7 @@ const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 12;
 task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsToken')
   .addFlag('autoDeploy', 'Deploy all contracts without user interaction')
   .addOptionalParam('weth', 'The WETH contract address', undefined, types.string)
-  .addOptionalParam('noundersdao', 'The nounders DAO contract address', undefined, types.string)
+  .addOptionalParam('soundersdao', 'The sounders DAO contract address', undefined, types.string)
   .addOptionalParam(
     'auctionTimeBuffer',
     'The auction time buffer (seconds)',
@@ -88,11 +88,11 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
     // prettier-ignore
     const proxyRegistryAddress = proxyRegistries[network.chainId] ?? proxyRegistries[ChainId.Rinkeby];
 
-    if (!args.noundersdao) {
+    if (!args.soundersdao) {
       console.log(
-        `Nounders DAO address not provided. Setting to deployer (${deployer.address})...`,
+        `Sounders DAO address not provided. Setting to deployer (${deployer.address})...`,
       );
-      args.noundersdao = deployer.address;
+      args.soundersdao = deployer.address;
     }
     if (!args.weth) {
       const deployedWETHContract = wethContracts[network.chainId];
@@ -105,10 +105,10 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
     }
 
     const nonce = await deployer.getTransactionCount();
-    const expectedNounsArtAddress = ethers.utils.getContractAddress({
-      from: deployer.address,
-      nonce: nonce + NOUNS_ART_NONCE_OFFSET,
-    });
+    // const expectedNounsArtAddress = ethers.utils.getContractAddress({
+    //   from: deployer.address,
+    //   nonce: nonce + NOUNS_ART_NONCE_OFFSET,
+    // });
     const expectedAuctionHouseAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
@@ -117,91 +117,91 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       from: deployer.address,
       nonce: nonce + GOVERNOR_N_DELEGATOR_NONCE_OFFSET,
     });
-    const deployment: Record<ContractName, DeployedContract> = {} as Record<
-      ContractName,
+    const deployment: Record<ContractNames, DeployedContract> = {} as Record<
+      ContractNames,
       DeployedContract
     >;
-    const contracts: Record<ContractName, ContractDeployment> = {
-      NFTDescriptorV2: {},
-      SVGRenderer: {},
-      NounsDescriptorV2: {
-        args: [expectedNounsArtAddress, () => deployment.SVGRenderer.address],
-        libraries: () => ({
-          NFTDescriptorV2: deployment.NFTDescriptorV2.address,
-        }),
-      },
-      Inflator: {},
-      NounsArt: {
-        args: [() => deployment.NounsDescriptorV2.address, () => deployment.Inflator.address],
-      },
-      NounsSeeder: {},
-      NounsToken: {
+    const contracts: Record<ContractNames, ContractDeployment> = {
+      // NFTDescriptorV2: {},
+      // SVGRenderer: {},
+      // NounsDescriptorV2: {
+      //   args: [expectedNounsArtAddress, () => deployment.SVGRenderer.address],
+      //   libraries: () => ({
+      //     NFTDescriptorV2: deployment.NFTDescriptorV2.address,
+      //   }),
+      // },
+      // Inflator: {},
+      // NounsArt: {
+      //   args: [() => deployment.NounsDescriptorV2.address, () => deployment.Inflator.address],
+      // },
+      // NounsSeeder: {},
+      NounsSequiturToken: {
         args: [
-          args.noundersdao,
+          args.soundersdao,
           expectedAuctionHouseAddress,
-          () => deployment.NounsDescriptorV2.address,
-          () => deployment.NounsSeeder.address,
-          proxyRegistryAddress,
+          // () => deployment.NounsDescriptorV2.address,
+          // () => deployment.NounsSeeder.address,
+          // proxyRegistryAddress,
         ],
       },
-      NounsAuctionHouse: {
+      AuctionHouse: {
         waitForConfirmation: true,
       },
-      NounsAuctionHouseProxyAdmin: {},
-      NounsAuctionHouseProxy: {
-        args: [
-          () => deployment.NounsAuctionHouse.address,
-          () => deployment.NounsAuctionHouseProxyAdmin.address,
-          () =>
-            new Interface(NounsAuctionHouseABI).encodeFunctionData('initialize', [
-              deployment.NounsToken.address,
-              args.weth,
-              args.auctionTimeBuffer,
-              args.auctionReservePrice,
-              args.auctionMinIncrementBidPercentage,
-              args.auctionDuration,
-            ]),
-        ],
-        waitForConfirmation: true,
-        validateDeployment: () => {
-          const expected = expectedAuctionHouseAddress.toLowerCase();
-          const actual = deployment.NounsAuctionHouseProxy.address.toLowerCase();
-          if (expected !== actual) {
-            throw new Error(
-              `Unexpected auction house proxy address. Expected: ${expected}. Actual: ${actual}.`,
-            );
-          }
-        },
-      },
-      NounsDAOExecutor: {
+      // NounsAuctionHouseProxyAdmin: {},
+      // NounsAuctionHouseProxy: {
+      //   args: [
+      //     () => deployment.NounsAuctionHouse.address,
+      //     () => deployment.NounsAuctionHouseProxyAdmin.address,
+      //     () =>
+      //       new Interface(NounsAuctionHouseABI).encodeFunctionData('initialize', [
+      //         deployment.NounsToken.address,
+      //         args.weth,
+      //         args.auctionTimeBuffer,
+      //         args.auctionReservePrice,
+      //         args.auctionMinIncrementBidPercentage,
+      //         args.auctionDuration,
+      //       ]),
+      //   ],
+      //   waitForConfirmation: true,
+      //   validateDeployment: () => {
+      //     const expected = expectedAuctionHouseAddress.toLowerCase();
+      //     const actual = deployment.NounsAuctionHouseProxy.address.toLowerCase();
+      //     if (expected !== actual) {
+      //       throw new Error(
+      //         `Unexpected auction house proxy address. Expected: ${expected}. Actual: ${actual}.`,
+      //       );
+      //     }
+      //   },
+      // },
+      NounsSequiturDAOExecutor: {
         args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
       },
-      NounsDAOLogicV1: {
-        waitForConfirmation: true,
-      },
-      NounsDAOProxy: {
-        args: [
-          () => deployment.NounsDAOExecutor.address,
-          () => deployment.NounsToken.address,
-          args.noundersdao,
-          () => deployment.NounsDAOExecutor.address,
-          () => deployment.NounsDAOLogicV1.address,
-          args.votingPeriod,
-          args.votingDelay,
-          args.proposalThresholdBps,
-          args.quorumVotesBps,
-        ],
-        waitForConfirmation: true,
-        validateDeployment: () => {
-          const expected = expectedNounsSequiturDAOAddress.toLowerCase();
-          const actual = deployment.NounsDAOProxy.address.toLowerCase();
-          if (expected !== actual) {
-            throw new Error(
-              `Unexpected Nouns DAO proxy address. Expected: ${expected}. Actual: ${actual}.`,
-            );
-          }
-        },
-      },
+      // NounsDAOLogicV1: {
+      //   waitForConfirmation: true,
+      // },
+      // NounsDAOProxy: {
+      //   args: [
+      //     () => deployment.NounsDAOExecutor.address,
+      //     () => deployment.NounsToken.address,
+      //     args.soundersdao,
+      //     () => deployment.NounsDAOExecutor.address,
+      //     () => deployment.NounsDAOLogicV1.address,
+      //     args.votingPeriod,
+      //     args.votingDelay,
+      //     args.proposalThresholdBps,
+      //     args.quorumVotesBps,
+      //   ],
+      //   waitForConfirmation: true,
+      //   validateDeployment: () => {
+      //     const expected = expectedNounsSequiturDAOAddress.toLowerCase();
+      //     const actual = deployment.NounsDAOProxy.address.toLowerCase();
+      //     if (expected !== actual) {
+      //       throw new Error(
+      //         `Unexpected Nouns DAO proxy address. Expected: ${expected}. Actual: ${actual}.`,
+      //       );
+      //     }
+      //   },
+      // },
     };
 
     for (const [name, contract] of Object.entries(contracts)) {
@@ -281,7 +281,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         await deployedContract.deployed();
       }
 
-      deployment[name as ContractName] = {
+      deployment[name as ContractNames] = {
         name,
         instance: deployedContract,
         address: deployedContract.address,

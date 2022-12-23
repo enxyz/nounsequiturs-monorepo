@@ -119,19 +119,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "noundersDAO",
-        "type": "address"
-      }
-    ],
-    "name": "NounsSequiturFoundersDAOUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -145,6 +132,19 @@
       }
     ],
     "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "soundersDAO",
+        "type": "address"
+      }
+    ],
+    "name": "SoundersDAOUpdated",
     "type": "event"
   },
   {
@@ -492,7 +492,7 @@
         "type": "address"
       }
     ],
-    "name": "setNounSequiturFoundersDAO",
+    "name": "setSoundersDAO",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
