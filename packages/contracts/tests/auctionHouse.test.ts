@@ -8,18 +8,18 @@ import { ethers } from 'hardhat';
 import {
   AuctionHouse,
   MaliciousBidder__factory as MaliciousBidderFactory,
-  NounSequiturToken,
-  NounSequiturToken__factory as NounSequiturTokenFactory,
+  NounsSequiturToken,
+  NounsSequiturToken__factory as NounsSequiturTokenFactory,
   WETH,
 } from '../typechain';
-import { deployNounSequiturToken, deployWeth } from './utils';
+import { deployNounsSequiturToken, deployWeth } from './utils';
 
 chai.use(solidity);
 const { expect } = chai;
 
 describe('auctionHouse', () => {
   let auctionHouse: AuctionHouse;
-  let nounsSequiturToken: NounSequiturToken;
+  let nounsSequiturToken: NounsSequiturToken;
   let weth: WETH;
   let deployer: SignerWithAddress;
   let soundersDAO: SignerWithAddress;
@@ -47,7 +47,7 @@ describe('auctionHouse', () => {
   before(async () => {
     [deployer, soundersDAO, bidderA, bidderB] = await ethers.getSigners();
 
-    nounsSequiturToken = await deployNounSequiturToken(
+    nounsSequiturToken = await deployNounsSequiturToken(
       deployer,
       soundersDAO.address,
       deployer.address,

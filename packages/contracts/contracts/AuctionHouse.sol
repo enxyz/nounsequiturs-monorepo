@@ -14,8 +14,8 @@
 pragma solidity ^0.8.17;
 
 import { Ownable } from '@openzeppelin/contracts/access/Ownable.sol';
-import { INounSequiturAuctionHouse } from './interfaces/INounSequiturAuctionHouse.sol';
-import { INounSequiturToken } from './interfaces/INounSequiturToken.sol';
+import { INounsSequiturAuctionHouse } from './interfaces/INounsSequiturAuctionHouse.sol';
+import { INounsSequiturToken } from './interfaces/INounsSequiturToken.sol';
 import { Pausable } from '@openzeppelin/contracts/security/Pausable.sol';
 import { ReentrancyGuard } from '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import { IWETH } from './interfaces/IWETH.sol';
@@ -24,9 +24,9 @@ import { IERC20 } from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 // `_safeMint` and `_mint` contain an additional `creator` argument and
 // emit two `Transfer` logs, rather than one
 
-contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, Ownable {
+contract AuctionHouse is INounsSequiturAuctionHouse, Pausable, ReentrancyGuard, Ownable {
     // The Nouns ERC721 token contract
-    INounSequiturToken public nounSequiturs;
+    INounsSequiturToken public nounsSequitur;
 
     // The address of the WETH contract
     address public weth;
@@ -44,7 +44,7 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
     uint256 public duration;
 
     // The active auction
-    INounSequiturAuctionHouse.Auction public auction;
+    INounsSequiturAuctionHouse.Auction public auction;
 
     /**
      * @notice Initialize the auction house and base contracts,
@@ -52,7 +52,7 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
      * @dev This function can only be called once.
      */
     constructor(
-        INounSequiturToken _nounSequiturs,
+        INounsSequiturToken _nounsSequitur,
         address _weth,
         uint256 _timeBuffer,
         uint256 _reservePrice,
@@ -61,7 +61,7 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
     ) {
         _pause();
 
-        nounSequiturs = _nounSequiturs;
+        nounsSequitur = _nounsSequitur;
         weth = _weth;
         timeBuffer = _timeBuffer;
         reservePrice = _reservePrice;
@@ -90,7 +90,7 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
      * @dev This contract only accepts payment in ETH.
      */
     function createBid(uint256 tokenId) external payable override nonReentrant {
-        INounSequiturAuctionHouse.Auction memory _auction = auction;
+        INounsSequiturAuctionHouse.Auction memory _auction = auction;
 
         require(_auction.tokenId == tokenId, 'Noun Sequitur not up for auction');
         require(block.timestamp < _auction.endTime, 'Auction expired');
@@ -183,7 +183,7 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
      * catch the revert and pause this contract.
      */
     function _createAuction() internal {
-        try nounSequiturs.mint() returns (uint256 tokenId) {
+        try nounsSequitur.mint() returns (uint256 tokenId) {
             uint256 startTime = block.timestamp;
             uint256 endTime = startTime + duration;
 
@@ -207,7 +207,7 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
      * @dev If there are no bids, the Noun is burned.
      */
     function _settleAuction() internal {
-        INounSequiturAuctionHouse.Auction memory _auction = auction;
+        INounsSequiturAuctionHouse.Auction memory _auction = auction;
 
         require(_auction.startTime != 0, "Auction hasn't begun");
         require(!_auction.isSettled, 'Auction has already been settled');
@@ -216,9 +216,9 @@ contract AuctionHouse is INounSequiturAuctionHouse, Pausable, ReentrancyGuard, O
         auction.isSettled = true;
 
         if (_auction.bidder == address(0)) {
-            nounSequiturs.burn(_auction.tokenId);
+            nounsSequitur.burn(_auction.tokenId);
         } else {
-            nounSequiturs.transferFrom(address(this), _auction.bidder, _auction.tokenId);
+            nounsSequitur.transferFrom(address(this), _auction.bidder, _auction.tokenId);
         }
 
         if (_auction.highestBid > 0) {

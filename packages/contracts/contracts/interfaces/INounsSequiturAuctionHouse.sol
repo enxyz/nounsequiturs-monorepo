@@ -4,9 +4,9 @@
 
 pragma solidity 0.8.17;
 
-interface INounSequiturAuctionHouse {
+interface INounsSequiturAuctionHouse {
     struct Auction {
-        // The ID of the NounSequitur
+        // The ID of the NounsSequitur
         uint256 tokenId;
         // The current highest bid
         uint256 highestBid;

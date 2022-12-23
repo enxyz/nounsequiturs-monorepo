@@ -31,8 +31,7 @@ const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 12;
 task('deploy-short-times', 'Deploy all Sounders contracts with short gov times for testing')
   .addFlag('autoDeploy', 'Deploy all contracts without user interaction')
   .addOptionalParam('weth', 'The WETH contract address', undefined, types.string)
-  // @enx TODO
-  .addOptionalParam('soundersdao', 'The Dounders DAO contract address', undefined, types.string)
+  .addOptionalParam('soundersdao', 'The Sounders DAO contract address', undefined, types.string)
   .addOptionalParam(
     'auctionTimeBuffer',
     'The auction time buffer (seconds)',
@@ -88,14 +87,12 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
     // });
 
     // not Proxy
-    const expectedAuctionHouseProxyAddress = ethers.utils.getContractAddress({
+    const expectedAuctionHouseAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
     });
 
-    // not Proxy
-    // @enx TODO ren
-    const expectedNounsDAOProxyAddress = ethers.utils.getContractAddress({
+    const expectedNounsSequiturDAOAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + GOVERNOR_N_DELEGATOR_NONCE_OFFSET,
     });
@@ -118,12 +115,10 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       // },
       // NounsSeeder: {},
 
-      // @enx TODO rename
-      // use contract name for now: NounSequiturToken
-      NounSequiturToken: {
+      NounsSequiturToken: {
         args: [
           args.soundersdao,
-          expectedAuctionHouseProxyAddress,
+          expectedAuctionHouseAddress,
           // () => deployment.NounsDescriptorV2.address,
           // () => deployment.NounsSeeder.address,
           // proxyRegistryAddress,
@@ -149,7 +144,7 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       //   ],
       //   waitForConfirmation: true,
       //   validateDeployment: () => {
-      //     const expected = expectedAuctionHouseProxyAddress.toLowerCase();
+      //     const expected = expectedAuctionHouseAddress.toLowerCase();
       //     const actual = deployment.NounsAuctionHouseProxy.address.toLowerCase();
       //     if (expected !== actual) {
       //       throw new Error(
@@ -159,7 +154,7 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       //   },
       // },
       NounsSequiturDAOExecutor: {
-        args: [expectedNounsDAOProxyAddress, args.timelockDelay],
+        args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
       },
       // NounsDAOLogicV2: {
       //   waitForConfirmation: true,
@@ -182,7 +177,7 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       //   ],
       //   waitForConfirmation: true,
       //   validateDeployment: () => {
-      //     const expected = expectedNounsDAOProxyAddress.toLowerCase();
+      //     const expected = expectedNounsSequiturDAOAddress.toLowerCase();
       //     const actual = deployment.NounsDAOProxyV2.address.toLowerCase();
       //     if (expected !== actual) {
       //       throw new Error(

@@ -14,7 +14,7 @@
   "function createBid(uint256) payable",
   "function duration() view returns (uint256)",
   "function minBidIncrementPercentage() view returns (uint8)",
-  "function nounSequiturs() view returns (address)",
+  "function nounsSequitur() view returns (address)",
   "function owner() view returns (address)",
   "function pause()",
   "function paused() view returns (bool)",

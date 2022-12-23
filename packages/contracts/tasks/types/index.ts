@@ -7,7 +7,7 @@ export enum ChainId {
   Kovan = 42,
 }
 
-export type ContractNames = 'NounSequiturToken' | 'AuctionHouse' | 'NounsSequiturDAOExecutor';
+export type ContractNames = 'NounsSequiturToken' | 'AuctionHouse' | 'NounsSequiturDAOExecutor';
 
 export interface ContractDeployment {
   args?: (string | number | (() => string))[];
