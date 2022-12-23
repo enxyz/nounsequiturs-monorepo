@@ -109,11 +109,11 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       from: deployer.address,
       nonce: nonce + NOUNS_ART_NONCE_OFFSET,
     });
-    const expectedAuctionHouseProxyAddress = ethers.utils.getContractAddress({
+    const expectedAuctionHouseAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
     });
-    const expectedNounsDAOProxyAddress = ethers.utils.getContractAddress({
+    const expectedNounsSequiturDAOAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + GOVERNOR_N_DELEGATOR_NONCE_OFFSET,
     });
@@ -138,7 +138,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       NounsToken: {
         args: [
           args.noundersdao,
-          expectedAuctionHouseProxyAddress,
+          expectedAuctionHouseAddress,
           () => deployment.NounsDescriptorV2.address,
           () => deployment.NounsSeeder.address,
           proxyRegistryAddress,
@@ -164,7 +164,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         ],
         waitForConfirmation: true,
         validateDeployment: () => {
-          const expected = expectedAuctionHouseProxyAddress.toLowerCase();
+          const expected = expectedAuctionHouseAddress.toLowerCase();
           const actual = deployment.NounsAuctionHouseProxy.address.toLowerCase();
           if (expected !== actual) {
             throw new Error(
@@ -174,7 +174,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         },
       },
       NounsDAOExecutor: {
-        args: [expectedNounsDAOProxyAddress, args.timelockDelay],
+        args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
       },
       NounsDAOLogicV1: {
         waitForConfirmation: true,
@@ -193,7 +193,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         ],
         waitForConfirmation: true,
         validateDeployment: () => {
-          const expected = expectedNounsDAOProxyAddress.toLowerCase();
+          const expected = expectedNounsSequiturDAOAddress.toLowerCase();
           const actual = deployment.NounsDAOProxy.address.toLowerCase();
           if (expected !== actual) {
             throw new Error(

@@ -1,8 +1,8 @@
 import { ethers } from 'hardhat';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import {
-  NounSequiturToken,
-  NounSequiturToken__factory as NounSequiturTokenFactory,
+  NounsSequiturToken,
+  NounsSequiturToken__factory as NounsSequiturTokenFactory,
   WETH,
   WETH__factory as WethFactory,
 } from '../typechain';
@@ -24,14 +24,14 @@ export const getSigners = async (): Promise<TestSigners> => {
   };
 };
 
-export const deployNounSequiturToken = async (
+export const deployNounsSequiturToken = async (
   deployer?: SignerWithAddress,
   soundersDAO?: string,
   minter?: string,
   proxyRegistryAddress?: string,
-): Promise<NounSequiturToken> => {
+): Promise<NounsSequiturToken> => {
   const signer = deployer || (await getSigners()).deployer;
-  const factory = new NounSequiturTokenFactory(signer);
+  const factory = new NounsSequiturTokenFactory(signer);
 
   return factory.deploy(
     soundersDAO || signer.address,

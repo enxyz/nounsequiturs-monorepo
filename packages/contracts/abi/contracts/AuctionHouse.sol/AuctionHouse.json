@@ -2,8 +2,8 @@
   {
     "inputs": [
       {
-        "internalType": "contract INounSequiturToken",
-        "name": "_nounSequiturs",
+        "internalType": "contract INounsSequiturToken",
+        "name": "_nounsSequitur",
         "type": "address"
       },
       {
@@ -298,10 +298,10 @@
   },
   {
     "inputs": [],
-    "name": "nounSequiturs",
+    "name": "nounsSequitur",
     "outputs": [
       {
-        "internalType": "contract INounSequiturToken",
+        "internalType": "contract INounsSequiturToken",
         "name": "",
         "type": "address"
       }
