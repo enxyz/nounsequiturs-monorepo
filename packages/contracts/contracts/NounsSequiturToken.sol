@@ -20,7 +20,7 @@ contract NounsSequiturToken is INounsSequiturToken, Ownable, ERC721Enumerable {
     // The Sounders DAO address (creators org)
     address public soundersDAO;
 
-    // An address who has permissions to mint NounsSequiturs
+    // An address who has permissions to mint Nouns Sequitur Tokens
     address public minter;
 
     // Whether the minter can be updated
@@ -103,7 +103,7 @@ contract NounsSequiturToken is INounsSequiturToken, Ownable, ERC721Enumerable {
     /**
      * @notice Mint a Nouns Sequitur to the minter, along with a possible noun sequitur founders
      * reward Nouns Sequitur. Nouns Sequitur Founders reward Nouns Sequitur are minted every 10 Nouns, starting at 0,
-     * until _ sounder Nouns Sequiturs have been minted (5 years w/ 24 hour auctions).
+     * until _ sounder Nouns Sequitur Tokens have been minted (5 years w/ 24 hour auctions).
      * @dev Call _mintTo with the to address(es).
      */
     function mint() public override onlyMinter returns (uint256) {
@@ -123,12 +123,12 @@ contract NounsSequiturToken is INounsSequiturToken, Ownable, ERC721Enumerable {
 
     /**
      * @notice Set the sounders DAO.
-     * @dev Only callable by the nounders DAO when not locked.
+     * @dev Only callable by the Sounders DAO when not locked.
      */
-    function setNounSequiturFoundersDAO(address _soundersDAO) external override onlySoundersDAO {
+    function setSoundersDAO(address _soundersDAO) external override onlySoundersDAO {
         soundersDAO = _soundersDAO;
 
-        emit NounsSequiturFoundersDAOUpdated(_soundersDAO);
+        emit SoundersDAOUpdated(_soundersDAO);
     }
 
     /**

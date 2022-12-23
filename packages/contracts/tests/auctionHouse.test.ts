@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
+// Based on NounsDAO's auction.test.ts
+
 import chai, { expect } from 'chai';
 import { solidity } from 'ethereum-waffle';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';

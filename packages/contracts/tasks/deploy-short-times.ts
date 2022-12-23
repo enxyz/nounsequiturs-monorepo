@@ -4,7 +4,7 @@
 // import { default as AuctionHouseABI } from '../abi/contracts/AuctionHouse.sol/AuctionHouse.json';
 
 import { ChainId, ContractDeployment, ContractNames, DeployedContract } from './types';
-// import { Interface, parseUnits } from 'ethers/lib/utils';
+import { Interface, parseUnits } from 'ethers/lib/utils';
 import { task, types } from 'hardhat/config';
 import promptjs from 'prompt';
 
@@ -12,10 +12,6 @@ promptjs.colors = false;
 promptjs.message = '> ';
 promptjs.delimiter = '';
 
-// const proxyRegistries: Record<number, string> = {
-//   [ChainId.Mainnet]: '0xa5409ec958c83c3f309868babaca7c86dcb077c1',
-//   [ChainId.Rinkeby]: '0xf57b2c51ded3a29e6891aba85459d600256cf317',
-// };
 const wethContracts: Record<number, string> = {
   [ChainId.Mainnet]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   [ChainId.Ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
@@ -61,9 +57,6 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
     const network = await ethers.provider.getNetwork();
     const [deployer] = await ethers.getSigners();
 
-    // prettier-ignore
-    // const proxyRegistryAddress = proxyRegistries[network.chainId] ?? proxyRegistries[ChainId.Rinkeby];
-
     if (!args.soundersdao) {
       console.log(
         `Sounders DAO address not provided. Setting to deployer (${deployer.address})...`,
@@ -81,17 +74,10 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
     }
 
     const nonce = await deployer.getTransactionCount();
-    // const expectedNounsArtAddress = ethers.utils.getContractAddress({
-    //   from: deployer.address,
-    //   nonce: nonce + NOUNS_ART_NONCE_OFFSET,
-    // });
-
-    // not Proxy
     const expectedAuctionHouseAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
     });
-
     const expectedNounsSequiturDAOAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + GOVERNOR_N_DELEGATOR_NONCE_OFFSET,
@@ -101,91 +87,16 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       DeployedContract
     >;
     const contracts: Record<ContractNames, ContractDeployment> = {
-      // NFTDescriptorV2: {},
-      // SVGRenderer: {},
-      // NounsDescriptorV2: {
-      //   args: [expectedNounsArtAddress, () => deployment.SVGRenderer.address],
-      //   libraries: () => ({
-      //     NFTDescriptorV2: deployment.NFTDescriptorV2.address,
-      //   }),
-      // },
-      // Inflator: {},
-      // NounsArt: {
-      //   args: [() => deployment.NounsDescriptorV2.address, () => deployment.Inflator.address],
-      // },
-      // NounsSeeder: {},
-
       NounsSequiturToken: {
-        args: [
-          args.soundersdao,
-          expectedAuctionHouseAddress,
-          // () => deployment.NounsDescriptorV2.address,
-          // () => deployment.NounsSeeder.address,
-          // proxyRegistryAddress,
-        ],
+        args: [args.soundersdao, expectedAuctionHouseAddress],
       },
       AuctionHouse: {
         waitForConfirmation: true,
       },
-      // NounsAuctionHouseProxyAdmin: {},
-      // NounsAuctionHouseProxy: {
-      //   args: [
-      //     () => deployment.NounsAuctionHouse.address,
-      //     () => deployment.NounsAuctionHouseProxyAdmin.address,
-      //     () =>
-      //       new Interface(AuctionHouseABI).encodeFunctionData('initialize', [
-      //         deployment.NounsToken.address,
-      //         args.weth,
-      //         args.auctionTimeBuffer,
-      //         args.auctionReservePrice,
-      //         args.auctionMinIncrementBidPercentage,
-      //         args.auctionDuration,
-      //       ]),
-      //   ],
-      //   waitForConfirmation: true,
-      //   validateDeployment: () => {
-      //     const expected = expectedAuctionHouseAddress.toLowerCase();
-      //     const actual = deployment.NounsAuctionHouseProxy.address.toLowerCase();
-      //     if (expected !== actual) {
-      //       throw new Error(
-      //         `Unexpected auction house proxy address. Expected: ${expected}. Actual: ${actual}.`,
-      //       );
-      //     }
-      //   },
-      // },
+
       NounsSequiturDAOExecutor: {
         args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
       },
-      // NounsDAOLogicV2: {
-      //   waitForConfirmation: true,
-      // },
-      // NounsDAOProxyV2: {
-      //   args: [
-      //     () => deployment.NounsDAOExecutor.address,
-      //     () => deployment.NounsToken.address,
-      //     args.noundersdao,
-      //     () => deployment.NounsDAOExecutor.address,
-      //     () => deployment.NounsDAOLogicV2.address,
-      //     args.votingPeriod,
-      //     args.votingDelay,
-      //     args.proposalThresholdBps,
-      //     {
-      //       minQuorumVotesBPS: args.minQuorumVotesBPS,
-      //       maxQuorumVotesBPS: args.maxQuorumVotesBPS,
-      //       quorumCoefficient: parseUnits(args.quorumCoefficient.toString(), 6),
-      //     },
-      //   ],
-      //   waitForConfirmation: true,
-      //   validateDeployment: () => {
-      //     const expected = expectedNounsSequiturDAOAddress.toLowerCase();
-      //     const actual = deployment.NounsDAOProxyV2.address.toLowerCase();
-      //     if (expected !== actual) {
-      //       throw new Error(
-      //         `Unexpected Nouns DAO proxy address. Expected: ${expected}. Actual: ${actual}.`,
-      //       );
-      //     }
-      //   },
-      // },
     };
 
     for (const [name, contract] of Object.entries(contracts)) {
