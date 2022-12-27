@@ -71,7 +71,7 @@ yarn task:mint-local --network localhost
 yarn task:deploy-and-configure --network [network] --update-configs
 
 # Verify by hand
-npx hardhat verify --network goerli [contract_address] [constructor_args]
+npx hardhat verify --network [network] [contract_address] [constructor_args]
 ```
 
 ### Automated Testnet Deployments

@@ -54,13 +54,6 @@ task(
       console.log('Started the first auction.');
     }
 
-    // Optionally write the deployed addresses to the SDK and subgraph configs.
-    // if (args.updateConfigs) {
-    //   await run('update-configs-daov2', {
-    //     contracts,
-    //   });
-    // }
-
     printContractsTable(contracts);
     console.log('Deployment Complete.');
   });

@@ -1,7 +1,6 @@
 // Based on NounsDAO's deploy-short-times.ts
 
-// import { default as NounsAuctionHouseABI } from '../abi/contracts/NounsAuctionHouse.sol/NounsAuctionHouse.json';
-// import { default as AuctionHouseABI } from '../abi/contracts/AuctionHouse.sol/AuctionHouse.json';
+// # % npx hardhat verify --network goerli 0x5f8eE9Fb0182fe792A5a72A4012ed551125CA8Ee 0xd3225D83ADa1E446b178B4512F7F1522433d2874  0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 30 1 2 120
 
 import { ChainId, ContractDeployment, ContractNames, DeployedContract } from './types';
 import { task, types } from 'hardhat/config';
@@ -81,6 +80,14 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
         args: [args.soundersdao, deployer.address, proxyRegistryAddress],
       },
       AuctionHouse: {
+        args: [
+          () => deployment.NounsSequiturToken.address,
+          args.weth,
+          args.auctionTimeBuffer,
+          args.auctionReservePrice,
+          args.auctionMinIncrementBidPercentage,
+          args.auctionDuration,
+        ],
         waitForConfirmation: true,
       },
     };
@@ -107,13 +114,15 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
         gasPrice = ethers.utils.parseUnits(result.gasPrice.toString(), 'gwei');
       }
 
+      // A valid fully qualified name was expected. Fully qualified names look like this: "contracts/AContract.sol:TheContract"
+      // Instead, this name was received: NounsSequiturToken
       let nameForFactory: string;
       switch (name) {
-        case 'NounsDAOExecutor':
-          nameForFactory = 'NounsDAOExecutorTest';
+        case 'NounsSequiturToken':
+          nameForFactory = 'contracts/NounsSequiturToken.sol:NounsSequiturToken';
           break;
-        case 'NounsDAOLogicV2':
-          nameForFactory = 'NounsDAOLogicV2Harness';
+        case 'AuctionHouse':
+          nameForFactory = 'contracts/AuctionHouse.sol:AuctionHouse';
           break;
         default:
           nameForFactory = name;
