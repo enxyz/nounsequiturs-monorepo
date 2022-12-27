@@ -1,14 +1,13 @@
 import { task } from 'hardhat/config';
-import { ContractName, DeployedContract } from './types';
+import { ContractNames, DeployedContract } from './types';
 
 async function delay(seconds: number) {
   return new Promise(resolve => setTimeout(resolve, 1000 * seconds));
 }
 
-task('deploy-test-token', 'Deploy TokenHarness given a descriptor')
-  .addParam('descriptorAddress', 'Address of a deployed descriptor contractor')
-  .addParam('seederAddress', 'Address of a deployed seeder contract')
-  .setAction(async ({ descriptorAddress, seederAddress }, { ethers, run, network }) => {
+// may need token URI
+task('deploy-test-token', 'Deploy TokenHarness given a descriptor').setAction(
+  async (args, { ethers, run, network }) => {
     const [deployer] = await ethers.getSigners();
     console.log(`Deploying from address ${deployer.address}`);
 
@@ -16,13 +15,7 @@ task('deploy-test-token', 'Deploy TokenHarness given a descriptor')
 
     const token = await (
       await ethers.getContractFactory('TokenHarness', deployer)
-    ).deploy(
-      deployer.address,
-      deployer.address,
-      descriptorAddress,
-      seederAddress,
-      proxyRegistryAddress,
-    );
+    ).deploy(deployer.address, deployer.address, proxyRegistryAddress);
     console.log(`TokenHarness deployed to: ${token.address}`);
 
     if (network.name !== 'localhost') {
@@ -35,13 +28,7 @@ task('deploy-test-token', 'Deploy TokenHarness given a descriptor')
       contracts.TokenHarness = {
         name: 'TokenHarness',
         address: token.address,
-        constructorArguments: [
-          deployer.address,
-          deployer.address,
-          descriptorAddress,
-          seederAddress,
-          proxyRegistryAddress,
-        ],
+        constructorArguments: [deployer.address, deployer.address, proxyRegistryAddress],
         instance: token,
         libraries: {},
       };
@@ -53,4 +40,5 @@ task('deploy-test-token', 'Deploy TokenHarness given a descriptor')
     }
 
     console.log('Done');
-  });
+  },
+);

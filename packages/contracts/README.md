@@ -16,6 +16,8 @@ yarn build
 
 ### Run tests
 
+Using parallel for faster test runs.
+
 ```sh
 yarn test
 ```
@@ -60,10 +62,16 @@ yarn task:[task-name] --help
 # Deploy & Configure for Local Development (Hardhat)
 yarn task:run-local
 
+# Mint local
+yarn task:mint-local --network localhost
+
 # Deploy & Configure (Testnet/Mainnet)
-# This task deploys and verifies the contracts, populates the descriptor, and transfers contract ownership.
+# This task deploys and verifies the contracts, and transfers contract ownership.
 # For parameter and flag information, run `yarn task:deploy-and-configure --help`.
 yarn task:deploy-and-configure --network [network] --update-configs
+
+# Verify by hand
+npx hardhat verify --network [network] [contract_address] [constructor_args]
 ```
 
 ### Automated Testnet Deployments

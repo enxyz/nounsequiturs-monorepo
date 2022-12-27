@@ -1,10 +1,8 @@
 // Based on NounsDAO's deploy-short-times.ts
 
-// import { default as NounsAuctionHouseABI } from '../abi/contracts/NounsAuctionHouse.sol/NounsAuctionHouse.json';
-// import { default as AuctionHouseABI } from '../abi/contracts/AuctionHouse.sol/AuctionHouse.json';
+// # % npx hardhat verify --network goerli 0x5f8eE9Fb0182fe792A5a72A4012ed551125CA8Ee 0xd3225D83ADa1E446b178B4512F7F1522433d2874  0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 30 1 2 120
 
 import { ChainId, ContractDeployment, ContractNames, DeployedContract } from './types';
-import { Interface, parseUnits } from 'ethers/lib/utils';
 import { task, types } from 'hardhat/config';
 import promptjs from 'prompt';
 
@@ -12,17 +10,15 @@ promptjs.colors = false;
 promptjs.message = '> ';
 promptjs.delimiter = '';
 
-const wethContracts: Record<number, string> = {
-  [ChainId.Mainnet]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-  [ChainId.Ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
-  [ChainId.Rinkeby]: '0xc778417e063141139fce010982780140aa0cd5ab',
-  [ChainId.Kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
-  // [ChainId.Goerli]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+const proxyRegistries: Record<number, string> = {
+  [ChainId.Mainnet]: '0xa5409ec958c83c3f309868babaca7c86dcb077c1',
+  [ChainId.Rinkeby]: '0xf57b2c51ded3a29e6891aba85459d600256cf317',
 };
 
-// const NOUNS_ART_NONCE_OFFSET = 4;
-const AUCTION_HOUSE_PROXY_NONCE_OFFSET = 9;
-const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 12;
+const wethContracts: Record<number, string> = {
+  [ChainId.Mainnet]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+  [ChainId.Goerli]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+};
 
 task('deploy-short-times', 'Deploy all Sounders contracts with short gov times for testing')
   .addFlag('autoDeploy', 'Deploy all contracts without user interaction')
@@ -52,10 +48,12 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
     60 * 2 /* 2 minutes */,
     types.int,
   )
-  .addOptionalParam('timelockDelay', 'The timelock delay (seconds)', 60 /* 1 min */, types.int)
   .setAction(async (args, { ethers }) => {
     const network = await ethers.provider.getNetwork();
     const [deployer] = await ethers.getSigners();
+
+    // prettier-ignore
+    const proxyRegistryAddress = proxyRegistries[network.chainId] ?? proxyRegistries[ChainId.Rinkeby];
 
     if (!args.soundersdao) {
       console.log(
@@ -73,29 +71,24 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       args.weth = deployedWETHContract;
     }
 
-    const nonce = await deployer.getTransactionCount();
-    const expectedAuctionHouseAddress = ethers.utils.getContractAddress({
-      from: deployer.address,
-      nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
-    });
-    const expectedNounsSequiturDAOAddress = ethers.utils.getContractAddress({
-      from: deployer.address,
-      nonce: nonce + GOVERNOR_N_DELEGATOR_NONCE_OFFSET,
-    });
     const deployment: Record<ContractNames, DeployedContract> = {} as Record<
       ContractNames,
       DeployedContract
     >;
     const contracts: Record<ContractNames, ContractDeployment> = {
       NounsSequiturToken: {
-        args: [args.soundersdao, expectedAuctionHouseAddress],
+        args: [args.soundersdao, deployer.address, proxyRegistryAddress],
       },
       AuctionHouse: {
+        args: [
+          () => deployment.NounsSequiturToken.address,
+          args.weth,
+          args.auctionTimeBuffer,
+          args.auctionReservePrice,
+          args.auctionMinIncrementBidPercentage,
+          args.auctionDuration,
+        ],
         waitForConfirmation: true,
-      },
-
-      NounsSequiturDAOExecutor: {
-        args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
       },
     };
 
@@ -121,13 +114,15 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
         gasPrice = ethers.utils.parseUnits(result.gasPrice.toString(), 'gwei');
       }
 
+      // A valid fully qualified name was expected. Fully qualified names look like this: "contracts/AContract.sol:TheContract"
+      // Instead, this name was received: NounsSequiturToken
       let nameForFactory: string;
       switch (name) {
-        case 'NounsDAOExecutor':
-          nameForFactory = 'NounsDAOExecutorTest';
+        case 'NounsSequiturToken':
+          nameForFactory = 'contracts/NounsSequiturToken.sol:NounsSequiturToken';
           break;
-        case 'NounsDAOLogicV2':
-          nameForFactory = 'NounsDAOLogicV2Harness';
+        case 'AuctionHouse':
+          nameForFactory = 'contracts/AuctionHouse.sol:AuctionHouse';
           break;
         default:
           nameForFactory = name;
