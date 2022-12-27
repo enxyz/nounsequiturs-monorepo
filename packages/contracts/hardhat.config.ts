@@ -6,7 +6,6 @@ import '@nomiclabs/hardhat-etherscan';
 import 'solidity-coverage';
 import '@typechain/hardhat';
 import 'hardhat-abi-exporter';
-import '@openzeppelin/hardhat-upgrades';
 import 'hardhat-gas-reporter';
 import './tasks';
 
@@ -57,7 +56,7 @@ const config: HardhatUserConfig = {
     outDir: './typechain',
   },
   gasReporter: {
-    enabled: !process.env.CI,
+    enabled: process.env.REPORT_GAS?.toLowerCase() === 'true' ? true : false,
     currency: 'USD',
     gasPrice: 50,
     src: 'contracts',

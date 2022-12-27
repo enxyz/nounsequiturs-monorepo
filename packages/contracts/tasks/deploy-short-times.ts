@@ -1,6 +1,10 @@
+// Based on NounsDAO's deploy-short-times.ts
+
 // import { default as NounsAuctionHouseABI } from '../abi/contracts/NounsAuctionHouse.sol/NounsAuctionHouse.json';
+// import { default as AuctionHouseABI } from '../abi/contracts/AuctionHouse.sol/AuctionHouse.json';
+
 import { ChainId, ContractDeployment, ContractNames, DeployedContract } from './types';
-import { Interface } from 'ethers/lib/utils';
+import { Interface, parseUnits } from 'ethers/lib/utils';
 import { task, types } from 'hardhat/config';
 import promptjs from 'prompt';
 
@@ -8,29 +12,26 @@ promptjs.colors = false;
 promptjs.message = '> ';
 promptjs.delimiter = '';
 
-const proxyRegistries: Record<number, string> = {
-  [ChainId.Mainnet]: '0xa5409ec958c83c3f309868babaca7c86dcb077c1',
-  [ChainId.Rinkeby]: '0xf57b2c51ded3a29e6891aba85459d600256cf317',
-};
 const wethContracts: Record<number, string> = {
   [ChainId.Mainnet]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
   [ChainId.Ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
   [ChainId.Rinkeby]: '0xc778417e063141139fce010982780140aa0cd5ab',
   [ChainId.Kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
+  // [ChainId.Goerli]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
 };
 
-const NOUNS_ART_NONCE_OFFSET = 4;
+// const NOUNS_ART_NONCE_OFFSET = 4;
 const AUCTION_HOUSE_PROXY_NONCE_OFFSET = 9;
 const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 12;
 
-task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsToken')
+task('deploy-short-times', 'Deploy all Sounders contracts with short gov times for testing')
   .addFlag('autoDeploy', 'Deploy all contracts without user interaction')
   .addOptionalParam('weth', 'The WETH contract address', undefined, types.string)
-  .addOptionalParam('soundersdao', 'The sounders DAO contract address', undefined, types.string)
+  .addOptionalParam('soundersdao', 'The Sounders DAO contract address', undefined, types.string)
   .addOptionalParam(
     'auctionTimeBuffer',
     'The auction time buffer (seconds)',
-    5 * 60 /* 5 minutes */,
+    30 /* 30 seconds */,
     types.int,
   )
   .addOptionalParam(
@@ -48,45 +49,13 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
   .addOptionalParam(
     'auctionDuration',
     'The auction duration (seconds)',
-    60 * 60 * 24 /* 24 hours */,
+    60 * 2 /* 2 minutes */,
     types.int,
   )
-  .addOptionalParam(
-    'timelockDelay',
-    'The timelock delay (seconds)',
-    60 * 60 * 24 * 2 /* 2 days */,
-    types.int,
-  )
-  .addOptionalParam(
-    'votingPeriod',
-    'The voting period (blocks)',
-    Math.round(4 * 60 * 24 * (60 / 13)) /* 4 days (13s blocks) */,
-    types.int,
-  )
-  .addOptionalParam(
-    'votingDelay',
-    'The voting delay (blocks)',
-    Math.round(3 * 60 * 24 * (60 / 13)) /* 3 days (13s blocks) */,
-    types.int,
-  )
-  .addOptionalParam(
-    'proposalThresholdBps',
-    'The proposal threshold (basis points)',
-    100 /* 1% */,
-    types.int,
-  )
-  .addOptionalParam(
-    'quorumVotesBps',
-    'Votes required for quorum (basis points)',
-    1_000 /* 10% */,
-    types.int,
-  )
+  .addOptionalParam('timelockDelay', 'The timelock delay (seconds)', 60 /* 1 min */, types.int)
   .setAction(async (args, { ethers }) => {
     const network = await ethers.provider.getNetwork();
     const [deployer] = await ethers.getSigners();
-
-    // prettier-ignore
-    const proxyRegistryAddress = proxyRegistries[network.chainId] ?? proxyRegistries[ChainId.Rinkeby];
 
     if (!args.soundersdao) {
       console.log(
@@ -105,10 +74,6 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
     }
 
     const nonce = await deployer.getTransactionCount();
-    // const expectedNounsArtAddress = ethers.utils.getContractAddress({
-    //   from: deployer.address,
-    //   nonce: nonce + NOUNS_ART_NONCE_OFFSET,
-    // });
     const expectedAuctionHouseAddress = ethers.utils.getContractAddress({
       from: deployer.address,
       nonce: nonce + AUCTION_HOUSE_PROXY_NONCE_OFFSET,
@@ -122,86 +87,16 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       DeployedContract
     >;
     const contracts: Record<ContractNames, ContractDeployment> = {
-      // NFTDescriptorV2: {},
-      // SVGRenderer: {},
-      // NounsDescriptorV2: {
-      //   args: [expectedNounsArtAddress, () => deployment.SVGRenderer.address],
-      //   libraries: () => ({
-      //     NFTDescriptorV2: deployment.NFTDescriptorV2.address,
-      //   }),
-      // },
-      // Inflator: {},
-      // NounsArt: {
-      //   args: [() => deployment.NounsDescriptorV2.address, () => deployment.Inflator.address],
-      // },
-      // NounsSeeder: {},
       NounsSequiturToken: {
-        args: [
-          args.soundersdao,
-          expectedAuctionHouseAddress,
-          // () => deployment.NounsDescriptorV2.address,
-          // () => deployment.NounsSeeder.address,
-          // proxyRegistryAddress,
-        ],
+        args: [args.soundersdao, expectedAuctionHouseAddress],
       },
       AuctionHouse: {
         waitForConfirmation: true,
       },
-      // NounsAuctionHouseProxyAdmin: {},
-      // NounsAuctionHouseProxy: {
-      //   args: [
-      //     () => deployment.NounsAuctionHouse.address,
-      //     () => deployment.NounsAuctionHouseProxyAdmin.address,
-      //     () =>
-      //       new Interface(NounsAuctionHouseABI).encodeFunctionData('initialize', [
-      //         deployment.NounsToken.address,
-      //         args.weth,
-      //         args.auctionTimeBuffer,
-      //         args.auctionReservePrice,
-      //         args.auctionMinIncrementBidPercentage,
-      //         args.auctionDuration,
-      //       ]),
-      //   ],
-      //   waitForConfirmation: true,
-      //   validateDeployment: () => {
-      //     const expected = expectedAuctionHouseAddress.toLowerCase();
-      //     const actual = deployment.NounsAuctionHouseProxy.address.toLowerCase();
-      //     if (expected !== actual) {
-      //       throw new Error(
-      //         `Unexpected auction house proxy address. Expected: ${expected}. Actual: ${actual}.`,
-      //       );
-      //     }
-      //   },
-      // },
+
       NounsSequiturDAOExecutor: {
         args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
       },
-      // NounsDAOLogicV1: {
-      //   waitForConfirmation: true,
-      // },
-      // NounsDAOProxy: {
-      //   args: [
-      //     () => deployment.NounsDAOExecutor.address,
-      //     () => deployment.NounsToken.address,
-      //     args.soundersdao,
-      //     () => deployment.NounsDAOExecutor.address,
-      //     () => deployment.NounsDAOLogicV1.address,
-      //     args.votingPeriod,
-      //     args.votingDelay,
-      //     args.proposalThresholdBps,
-      //     args.quorumVotesBps,
-      //   ],
-      //   waitForConfirmation: true,
-      //   validateDeployment: () => {
-      //     const expected = expectedNounsSequiturDAOAddress.toLowerCase();
-      //     const actual = deployment.NounsDAOProxy.address.toLowerCase();
-      //     if (expected !== actual) {
-      //       throw new Error(
-      //         `Unexpected Nouns DAO proxy address. Expected: ${expected}. Actual: ${actual}.`,
-      //       );
-      //     }
-      //   },
-      // },
     };
 
     for (const [name, contract] of Object.entries(contracts)) {
@@ -226,7 +121,20 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         gasPrice = ethers.utils.parseUnits(result.gasPrice.toString(), 'gwei');
       }
 
-      const factory = await ethers.getContractFactory(name, {
+      let nameForFactory: string;
+      switch (name) {
+        case 'NounsDAOExecutor':
+          nameForFactory = 'NounsDAOExecutorTest';
+          break;
+        case 'NounsDAOLogicV2':
+          nameForFactory = 'NounsDAOLogicV2Harness';
+          break;
+        default:
+          nameForFactory = name;
+          break;
+      }
+
+      const factory = await ethers.getContractFactory(nameForFactory, {
         libraries: contract?.libraries?.(),
       });
 
@@ -282,7 +190,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       }
 
       deployment[name as ContractNames] = {
-        name,
+        name: nameForFactory,
         instance: deployedContract,
         address: deployedContract.address,
         constructorArguments: contract.args?.map(a => (typeof a === 'function' ? a() : a)) ?? [],

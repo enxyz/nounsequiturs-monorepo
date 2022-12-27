@@ -23,7 +23,13 @@ yarn test
 Test specific file:
 
 ```sh
-yarn test ./test/path-to-file
+yarn run hardhat test ./test/path-to-file
+```
+
+Show gas report:
+
+```sh
+REPORT_GAS=true yarn test
 ```
 
 ### Install forge dependencies
