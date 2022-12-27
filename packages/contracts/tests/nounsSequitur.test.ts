@@ -1,6 +1,6 @@
 import chai from 'chai';
 import { ethers } from 'hardhat';
-import { BigNumber as EthersBN, constants } from 'ethers';
+import { constants, ContractReceipt, Event } from 'ethers';
 import { solidity } from 'ethereum-waffle';
 import { NounsSequiturToken } from '../typechain';
 import { deployNounsSequiturToken } from './utils';
@@ -94,6 +94,24 @@ describe('NounsSequiturToken', () => {
   it('should revert on non-minter mint', async () => {
     const account0AsNounErc721Account = nounsSequiturToken.connect(soundersDAO);
     await expect(account0AsNounErc721Account.mint()).to.be.reverted;
+  });
+
+  it('should not allow more than 401 tokens to be minted', async () => {
+    let receipt: ContractReceipt;
+    let lastEvent: Event | undefined;
+    while ((await nounsSequiturToken.totalSupply()).toNumber() < 401) {
+      receipt = await (await nounsSequiturToken.mint()).wait();
+      lastEvent = receipt?.events && receipt.events[receipt.events.length - 1];
+    }
+
+    await expect(nounsSequiturToken.mint()).to.be.revertedWith(
+      'All Nouns Sequitur have been minted',
+    );
+
+    expect((await nounsSequiturToken.totalSupply()).toNumber()).to.eq(401);
+    expect(lastEvent?.args?.tokenId).to.eq(400);
+    expect(await nounsSequiturToken.balanceOf(soundersDAO.address)).to.eq(41);
+    expect(await nounsSequiturToken.balanceOf(deployer.address)).to.eq(360);
   });
 
   describe('contractURI', async () => {
