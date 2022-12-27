@@ -32,7 +32,6 @@ describe('NounsSequiturToken', () => {
     await ethers.provider.send('evm_revert', [snapshotId]);
   });
 
-  // it('should allow the minter to mint a Noun Sequitur to itself and a reward noun to the soundersDAO', async () => {});
   it('should allow the minter to mint a Noun Sequitur to itself and a reward noun to the soundersDAO', async () => {
     const receipt = await (await nounsSequiturToken.mint()).wait();
 
