@@ -93,10 +93,6 @@ task('deploy-short-times', 'Deploy all Sounders contracts with short gov times f
       AuctionHouse: {
         waitForConfirmation: true,
       },
-
-      NounsSequiturDAOExecutor: {
-        args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
-      },
     };
 
     for (const [name, contract] of Object.entries(contracts)) {

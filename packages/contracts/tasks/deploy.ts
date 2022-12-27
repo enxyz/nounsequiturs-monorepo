@@ -20,7 +20,6 @@ const wethContracts: Record<number, string> = {
   [ChainId.Goerli]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
 };
 
-const NOUNS_ART_NONCE_OFFSET = 4;
 const AUCTION_HOUSE_PROXY_NONCE_OFFSET = 9;
 const GOVERNOR_N_DELEGATOR_NONCE_OFFSET = 12;
 
@@ -56,30 +55,6 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
     'timelockDelay',
     'The timelock delay (seconds)',
     60 * 60 * 24 * 2 /* 2 days */,
-    types.int,
-  )
-  .addOptionalParam(
-    'votingPeriod',
-    'The voting period (blocks)',
-    Math.round(4 * 60 * 24 * (60 / 13)) /* 4 days (13s blocks) */,
-    types.int,
-  )
-  .addOptionalParam(
-    'votingDelay',
-    'The voting delay (blocks)',
-    Math.round(3 * 60 * 24 * (60 / 13)) /* 3 days (13s blocks) */,
-    types.int,
-  )
-  .addOptionalParam(
-    'proposalThresholdBps',
-    'The proposal threshold (basis points)',
-    100 /* 1% */,
-    types.int,
-  )
-  .addOptionalParam(
-    'quorumVotesBps',
-    'Votes required for quorum (basis points)',
-    1_000 /* 10% */,
     types.int,
   )
   .setAction(async (args, { ethers }) => {
@@ -142,7 +117,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
           expectedAuctionHouseAddress,
           // () => deployment.NounsDescriptorV2.address,
           // () => deployment.NounsSeeder.address,
-          // proxyRegistryAddress,
+          proxyRegistryAddress,
         ],
       },
       AuctionHouse: {
@@ -174,9 +149,6 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       //     }
       //   },
       // },
-      NounsSequiturDAOExecutor: {
-        args: [expectedNounsSequiturDAOAddress, args.timelockDelay],
-      },
       // NounsDAOLogicV1: {
       //   waitForConfirmation: true,
       // },

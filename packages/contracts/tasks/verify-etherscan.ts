@@ -1,9 +1,9 @@
 import { task, types } from 'hardhat/config';
-import { ContractName, DeployedContract } from './types';
+import { ContractNames, DeployedContract } from './types';
 
 task('verify-etherscan', 'Verify the Solidity contracts on Etherscan')
   .addParam('contracts', 'Contract objects from the deployment', undefined, types.json)
-  .setAction(async ({ contracts }: { contracts: Record<ContractName, DeployedContract> }, hre) => {
+  .setAction(async ({ contracts }: { contracts: Record<ContractNames, DeployedContract> }, hre) => {
     for (const [, contract] of Object.entries(contracts)) {
       console.log(`verifying ${contract.name}...`);
       try {
