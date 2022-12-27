@@ -26,7 +26,13 @@ contract NounsSequiturToken is INounsSequiturToken, Ownable, ERC721Enumerable {
     // Whether the minter can be updated
     bool public isMinterLocked;
 
-    // The internal noun sequitur ID tracker
+    /**
+     * The internal noun sequitur ID tracker
+     *
+     * @dev Start with #0 as 1st, end with #400 as 401st.
+     *
+     * */
+
     uint256 private _currentNounsSequiturId;
 
     // IPFS content hash of contract-level metadata
@@ -102,12 +108,17 @@ contract NounsSequiturToken is INounsSequiturToken, Ownable, ERC721Enumerable {
     // TODO: @enx: update quantity and logic of total supply
     /**
      * @notice Mint a Nouns Sequitur to the minter, along with a possible noun sequitur founders
-     * reward Nouns Sequitur. Nouns Sequitur Founders reward Nouns Sequitur are minted every 10 Nouns, starting at 0,
-     * until _ sounder Nouns Sequitur Tokens have been minted (5 years w/ 24 hour auctions).
+     * reward Nouns Sequitur. Nouns Sequitur Founders reward Nouns Sequitur are minted every 10 Nouns, starting at 0.
+     * No more than 401 Nouns Sequitur Tokens can be minted.
      * @dev Call _mintTo with the to address(es).
      */
     function mint() public override onlyMinter returns (uint256) {
-        if (_currentNounsSequiturId <= 1820 && _currentNounsSequiturId % 10 == 0) {
+        require(_currentNounsSequiturId < 401, 'All Nouns Sequitur have been minted');
+        if (_currentNounsSequiturId == 400) {
+            return _mintTo(soundersDAO, _currentNounsSequiturId++);
+        }
+
+        if (_currentNounsSequiturId % 10 == 0) {
             _mintTo(soundersDAO, _currentNounsSequiturId++);
         }
         return _mintTo(minter, _currentNounsSequiturId++);
