@@ -16,6 +16,8 @@ yarn build
 
 ### Run tests
 
+Using parallel for faster test runs.
+
 ```sh
 yarn test
 ```
