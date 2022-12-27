@@ -2,8 +2,8 @@ import { task, types } from 'hardhat/config';
 import { Contract as EthersContract } from 'ethers';
 import { ContractNames } from './types';
 
-// type LocalContractName = ContractNames | 'WETH' | 'Multicall2';
-type LocalContractName = ContractNames | 'WETH';
+type LocalContractName = ContractNames | 'WETH' | 'Multicall2';
+// type LocalContractName = ContractNames | 'WETH';
 
 interface Contract {
   args?: (string | number | (() => string | undefined))[];
@@ -50,7 +50,7 @@ task('deploy-local', 'Deploy contracts to hardhat')
         ],
         waitForConfirmation: true,
       },
-      //   Multicall2: {},
+      Multicall2: {},
     };
 
     for (const [name, contract] of Object.entries(contracts)) {
