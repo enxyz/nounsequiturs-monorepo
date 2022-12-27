@@ -40,35 +40,18 @@ task(
     // Deploy the Sounders DAO contracts and return deployment information
     const contracts = await run('deploy-short-times', args);
 
-    // @enx - possible place for IPFS image CID during testing
-    // Populate the on-chain art
-    // await run('populate-descriptor', {
-    //   nftDescriptor: contracts.NFTDescriptorV2.address,
-    //   nounsDescriptor: contracts.NounsDescriptorV2.address,
-    // });
+    // Verify the contracts on Etherscan
+    await run('verify-etherscan', {
+      contracts,
+    });
 
-    // Transfer ownership of all contract except for the auction house.
-    // We must maintain ownership of the auction house to kick off the first auction.
-    const executorAddress = contracts.NounsDAOExecutor.address;
-    await contracts.NounsToken.instance.transferOwnership(executorAddress);
-    await contracts.NounsAuctionHouseProxyAdmin.instance.transferOwnership(executorAddress);
-    console.log(
-      'Transferred ownership of the descriptor, token, and proxy admin contracts to the executor.',
-    );
-
-    // Optionally kick off the first auction and transfer ownership of the auction house
-    // to the Nouns DAO executor.
+    // Optionally kick off the first auction
     if (args.startAuction) {
-      const auctionHouse = contracts.NounsAuctionHouse.instance.attach(
-        contracts.NounsAuctionHouseProxy.address,
-      );
+      const auctionHouse = contracts.AuctionHouse.instance;
       await auctionHouse.unpause({
         gasLimit: 1_000_000,
       });
-      await auctionHouse.transferOwnership(executorAddress);
-      console.log(
-        'Started the first auction and transferred ownership of the auction house to the executor.',
-      );
+      console.log('Started the first auction.');
     }
 
     // Optionally write the deployed addresses to the SDK and subgraph configs.

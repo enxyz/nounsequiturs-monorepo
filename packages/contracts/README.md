@@ -69,6 +69,9 @@ yarn task:mint-local --network localhost
 # This task deploys and verifies the contracts, and transfers contract ownership.
 # For parameter and flag information, run `yarn task:deploy-and-configure --help`.
 yarn task:deploy-and-configure --network [network] --update-configs
+
+# Verify by hand
+npx hardhat verify --network goerli [contract_address] [constructor_args]
 ```
 
 ### Automated Testnet Deployments
