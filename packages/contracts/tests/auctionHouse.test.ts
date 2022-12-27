@@ -91,11 +91,6 @@ describe('auctionHouse', () => {
     expect(createdEvent?.args?.endTime).to.equal(timestamp + DURATION);
   });
 
-  // artwork
-  it('should revert if no artwork for the NFT is provided and initialize aution is called', async () => {});
-
-  it('should not be possible to change the artwork after auction is started', async () => {});
-
   // bids
   it('should revert if a user creates a bid for an inactive auction', async () => {
     await (await auctionHouse.unpause()).wait();
@@ -226,17 +221,16 @@ describe('auctionHouse', () => {
     expect(createdEvent?.args?.endTime).to.equal(timestamp + DURATION);
   });
 
-  // sounders
-  it('should send the correct number of NFTs to the founders DAO', async () => {});
-
-  // termination
-  // 401 https://discord.com/channels/1027658604335071373/1027658604792270868/1028080888887660614
-  it('should end after 401 strips', async () => {});
-
   // edge cases
   it('should not create a new auction if the auction house is paused and unpaused while an auction is ongoing', async () => {});
   it('should create a new auction if the auction house is paused and unpaused after an auction is settled', async () => {
     // @enx - description implies auction is stopped when minter is updated
   });
   it('should settle the current auction and pause the contract if the minter is updated while the auction house is unpaused', async () => {});
+
+  // artwork
+  describe('artwork', () => {
+    it('should revert if no artwork for the NFT is provided and initialize aution is called', async () => {});
+    it('should not be possible to change the artwork after auction is started', async () => {});
+  });
 });
