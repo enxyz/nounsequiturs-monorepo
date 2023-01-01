@@ -99,7 +99,7 @@
         "type": "uint256"
       }
     ],
-    "name": "NounSequiturBurned",
+    "name": "NounsSequiturBurned",
     "type": "event"
   },
   {
@@ -112,20 +112,7 @@
         "type": "uint256"
       }
     ],
-    "name": "NounSequiturCreated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "noundersDAO",
-        "type": "address"
-      }
-    ],
-    "name": "NounSequiturFoundersDAOUpdated",
+    "name": "NounsSequiturCreated",
     "type": "event"
   },
   {
@@ -145,6 +132,19 @@
       }
     ],
     "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "soundersDAO",
+        "type": "address"
+      }
+    ],
+    "name": "SoundersDAOUpdated",
     "type": "event"
   },
   {
@@ -492,7 +492,7 @@
         "type": "address"
       }
     ],
-    "name": "setNounSequiturFoundersDAO",
+    "name": "setSoundersDAO",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

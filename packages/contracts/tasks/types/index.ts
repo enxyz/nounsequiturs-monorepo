@@ -4,10 +4,11 @@ export enum ChainId {
   Mainnet = 1,
   Ropsten = 3,
   Rinkeby = 4,
+  Goerli = 5,
   Kovan = 42,
 }
 
-export type ContractName = 'Contract' | 'Contractv2';
+export type ContractNames = 'NounsSequiturToken' | 'AuctionHouse';
 
 export interface ContractDeployment {
   args?: (string | number | (() => string))[];

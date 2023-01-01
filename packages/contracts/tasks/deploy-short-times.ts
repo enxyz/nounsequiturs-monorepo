@@ -1,4 +1,7 @@
-// import { default as NounsAuctionHouseABI } from '../abi/contracts/NounsAuctionHouse.sol/NounsAuctionHouse.json';
+// Based on NounsDAO's deploy-short-times.ts
+
+// # % npx hardhat verify --network goerli 0x5f8eE9Fb0182fe792A5a72A4012ed551125CA8Ee 0xd3225D83ADa1E446b178B4512F7F1522433d2874  0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 30 1 2 120
+
 import { ChainId, ContractDeployment, ContractNames, DeployedContract } from './types';
 import { task, types } from 'hardhat/config';
 import promptjs from 'prompt';
@@ -11,22 +14,20 @@ const proxyRegistries: Record<number, string> = {
   [ChainId.Mainnet]: '0xa5409ec958c83c3f309868babaca7c86dcb077c1',
   [ChainId.Rinkeby]: '0xf57b2c51ded3a29e6891aba85459d600256cf317',
 };
+
 const wethContracts: Record<number, string> = {
   [ChainId.Mainnet]: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-  [ChainId.Ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
-  [ChainId.Rinkeby]: '0xc778417e063141139fce010982780140aa0cd5ab',
-  [ChainId.Kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
   [ChainId.Goerli]: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
 };
 
-task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsToken')
+task('deploy-short-times', 'Deploy all Sounders contracts with short gov times for testing')
   .addFlag('autoDeploy', 'Deploy all contracts without user interaction')
   .addOptionalParam('weth', 'The WETH contract address', undefined, types.string)
-  .addOptionalParam('soundersdao', 'The sounders DAO contract address', undefined, types.string)
+  .addOptionalParam('soundersdao', 'The Sounders DAO contract address', undefined, types.string)
   .addOptionalParam(
     'auctionTimeBuffer',
     'The auction time buffer (seconds)',
-    5 * 60 /* 5 minutes */,
+    30 /* 30 seconds */,
     types.int,
   )
   .addOptionalParam(
@@ -44,7 +45,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
   .addOptionalParam(
     'auctionDuration',
     'The auction duration (seconds)',
-    60 * 60 * 24 /* 24 hours */,
+    60 * 2 /* 2 minutes */,
     types.int,
   )
   .setAction(async (args, { ethers }) => {
@@ -76,9 +77,17 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
     >;
     const contracts: Record<ContractNames, ContractDeployment> = {
       NounsSequiturToken: {
-        args: [args.soundersdao || deployer.address, deployer.address, proxyRegistryAddress],
+        args: [args.soundersdao, deployer.address, proxyRegistryAddress],
       },
       AuctionHouse: {
+        args: [
+          () => deployment.NounsSequiturToken.address,
+          args.weth,
+          args.auctionTimeBuffer,
+          args.auctionReservePrice,
+          args.auctionMinIncrementBidPercentage,
+          args.auctionDuration,
+        ],
         waitForConfirmation: true,
       },
     };
@@ -105,7 +114,22 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
         gasPrice = ethers.utils.parseUnits(result.gasPrice.toString(), 'gwei');
       }
 
-      const factory = await ethers.getContractFactory(name, {
+      // A valid fully qualified name was expected. Fully qualified names look like this: "contracts/AContract.sol:TheContract"
+      // Instead, this name was received: NounsSequiturToken
+      let nameForFactory: string;
+      switch (name) {
+        case 'NounsSequiturToken':
+          nameForFactory = 'contracts/NounsSequiturToken.sol:NounsSequiturToken';
+          break;
+        case 'AuctionHouse':
+          nameForFactory = 'contracts/AuctionHouse.sol:AuctionHouse';
+          break;
+        default:
+          nameForFactory = name;
+          break;
+      }
+
+      const factory = await ethers.getContractFactory(nameForFactory, {
         libraries: contract?.libraries?.(),
       });
 
@@ -161,7 +185,7 @@ task('deploy', 'Deploys NFTDescriptor, NounsDescriptor, NounsSeeder, and NounsTo
       }
 
       deployment[name as ContractNames] = {
-        name,
+        name: nameForFactory,
         instance: deployedContract,
         address: deployedContract.address,
         constructorArguments: contract.args?.map(a => (typeof a === 'function' ? a() : a)) ?? [],
