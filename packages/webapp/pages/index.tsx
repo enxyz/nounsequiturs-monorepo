@@ -3,8 +3,16 @@ import React from 'react';
 
 import { Container, Header, Main, Footer, Cards, Splash } from '@components';
 import Head from 'next/head';
+import { NextSeo } from 'next-seo';
 
 const Home: React.FC = () => {
+  const siteConfig = {
+    title: "Noun Sequitur",
+    description:
+      "We have one year of comic strips that tells our story of the Nouns. We will release a strip every day for 365 days.",
+    url: "https://nounsequitur.wtf",
+    shareGraphic: "https://nounsequitur.wtf/splash-image.jpg",
+  };
   return (
     <div style={{ backgroundColor: '#F6F1E5'}}>
     <Container>
@@ -23,6 +31,29 @@ const Home: React.FC = () => {
           rel="stylesheet"
         />
       </Head>
+      <NextSeo
+        title={siteConfig.title}
+        description={siteConfig.description}
+        openGraph={{
+          title: siteConfig.title,
+          description: siteConfig.description,
+          url: siteConfig.url,
+          site_name: siteConfig.title,
+          images: [
+            {
+              url: siteConfig.shareGraphic,
+              width: 500,
+              height: 500,
+              alt: `${siteConfig.title} Share graphic`,
+            },
+          ],
+        }}
+        twitter={{
+          cardType: "summary_large_image",
+          site: siteConfig.url,
+          handle: "",
+        }}
+      />
       {/* <Header /> */}
       <Splash />
       {/* <Main />
