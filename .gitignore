@@ -9,3 +9,13 @@ dist
 .DS_Store
 *.tsbuildinfo
 *.log
+
+# webapp 
+packages/webapp/node_modules
+packages/webapp/.env
+# next.js build files
+packages/webapp/.next
+# environment variables
+packages/webapp/.env
+packages/webapp/.env.*
+packages/webapp/!.env.example
