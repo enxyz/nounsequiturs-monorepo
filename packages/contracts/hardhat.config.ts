@@ -11,7 +11,29 @@ import './tasks';
 
 dotenv.config();
 
-const config: HardhatUserConfig = {
+interface MyHardhatConfig extends HardhatUserConfig {
+  etherscan: {
+    apiKey: string;
+  };
+  abiExporter: {
+    path: string;
+    clear: boolean;
+    runOnCompile: boolean;
+    pretty?: boolean;
+  }[];
+  typechain: {
+    outDir: string;
+  };
+  gasReporter: {
+    enabled: boolean;
+    currency: string;
+    gasPrice: number;
+    src: string;
+    coinmarketcap: string;
+  };
+}
+
+const config: MyHardhatConfig = {
   solidity: {
     version: '0.8.17',
     settings: {
@@ -43,7 +65,7 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY,
+    apiKey: process.env.ETHERSCAN_API_KEY || '',
   },
   abiExporter: [
     {
