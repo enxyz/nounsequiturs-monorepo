@@ -1,4 +1,4 @@
-import chai from 'chai';
+import chai, { expect } from 'chai';
 import { ethers } from 'hardhat';
 import { constants, ContractReceipt, Event } from 'ethers';
 import { solidity } from 'ethereum-waffle';
@@ -7,7 +7,6 @@ import { deployNounsSequiturToken } from './utils';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 chai.use(solidity);
-const { expect } = chai;
 
 describe('NounsSequiturToken', () => {
   let nounsSequiturToken: NounsSequiturToken;
