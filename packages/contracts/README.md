@@ -30,20 +30,10 @@ yarn run hardhat test ./test/path-to-file
 
 Show gas report:
 
+#TODO: fix bigint error
+
 ```sh
 REPORT_GAS=true yarn test
-```
-
-### Install forge dependencies
-
-```sh
-forge install
-```
-
-### Run forge tests
-
-```sh
-forge test -vvv
 ```
 
 ### Environment Setup
