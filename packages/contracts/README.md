@@ -25,7 +25,7 @@ yarn test
 Test specific file:
 
 ```sh
-yarn run hardhat test ./test/path-to-file
+yarn run hardhat tests ./test/path-to-file
 ```
 
 Show gas report:

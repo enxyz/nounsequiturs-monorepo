@@ -181,16 +181,73 @@ describe('auctionHouse', () => {
     expect(await weth.balanceOf(maliciousBidder.address)).to.equal(RESERVE_PRICE);
   });
 
-  it('should emit an `AuctionBid` event on a successful bid', async () => {});
+  it('should emit an `AuctionBid` event on a successful bid', async () => {
+    await (await auctionHouse.unpause()).wait();
 
-  it('should emit an `AuctionExtended` event if the auction end time is within the time buffer', async () => {});
+    const { tokenId } = await auctionHouse.auction();
+    const tx = await auctionHouse.connect(bidderA).createBid(tokenId, {
+      value: RESERVE_PRICE,
+    });
+    const receipt = await tx.wait();
+
+    const bidEvent = receipt.events?.find(e => e.event === 'AuctionBid');
+    expect(bidEvent?.args?.tokenId).to.equal(tokenId);
+    expect(bidEvent?.args?.sender).to.equal(bidderA.address);
+    expect(bidEvent?.args?.value).to.equal(RESERVE_PRICE);
+  });
+
+  it('should emit an `AuctionExtended` event if the auction end time is within the time buffer', async () => {
+    await (await auctionHouse.unpause()).wait();
+    const timeBuffer = (await auctionHouse.timeBuffer()).toNumber();
+    const { tokenId } = await auctionHouse.auction();
+    await auctionHouse.connect(bidderA).createBid(tokenId, {
+      value: RESERVE_PRICE,
+    });
+
+    await ethers.provider.send('evm_increaseTime', [60 * 60 * 24 - timeBuffer + 1 * 60]); // Add 23 hours 46 minutes
+    const tx = await auctionHouse.connect(bidderA).createBid(tokenId, {
+      value: RESERVE_PRICE * 2,
+    });
+    const receipt = await tx.wait();
+
+    const extendedEvent = receipt.events?.find(e => e.event === 'AuctionExtended');
+    expect(extendedEvent?.args?.tokenId).to.equal(tokenId);
+    expect(extendedEvent?.args?.endTime).to.equal(
+      (await ethers.provider.getBlock('latest')).timestamp + timeBuffer,
+    );
+  });
 
   // settlement
-  it('should revert if auction settlement is attempted while the auction is still active', async () => {});
+  it('should revert if auction settlement is attempted while the auction is still active', async () => {
+    await (await auctionHouse.unpause()).wait();
+    const tx = auctionHouse.connect(bidderA).settleCurrentAndCreateNewAuction();
+    await expect(tx).to.be.revertedWith("Auction hasn't completed");
+  });
 
-  it('should transfer the NounsSequitur to the highest bidder on auction settlement', async () => {});
+  it('should transfer the NounsSequitur to the highest bidder on auction settlement', async () => {
+    await (await auctionHouse.unpause()).wait();
 
-  it('should burn a NounsSequitur on auction settlement if no bids are received', async () => {});
+    const { tokenId } = await auctionHouse.auction();
+    await auctionHouse.connect(bidderA).createBid(tokenId, {
+      value: RESERVE_PRICE,
+    });
+    await ethers.provider.send('evm_increaseTime', [60 * 60 * 25]); // Add 25 hours
+    await auctionHouse.connect(bidderA).settleCurrentAndCreateNewAuction();
+
+    expect(await nounsSequiturToken.ownerOf(tokenId)).to.equal(bidderA.address);
+  });
+
+  it('should burn a NounsSequitur on auction settlement if no bids are received', async () => {
+    await (await auctionHouse.unpause()).wait();
+
+    const { tokenId } = await auctionHouse.auction();
+    await ethers.provider.send('evm_increaseTime', [60 * 60 * 25]); // Add 25 hours
+    await auctionHouse.connect(bidderA).settleCurrentAndCreateNewAuction();
+
+    await expect(nounsSequiturToken.ownerOf(tokenId)).to.be.revertedWith(
+      'ERC721: owner query for nonexistent token',
+    );
+  });
 
   it('should emit `AuctionSettled` and `AuctionCreated` events if all conditions are met', async () => {
     await (await auctionHouse.unpause()).wait();
@@ -220,11 +277,41 @@ describe('auctionHouse', () => {
   });
 
   // edge cases
-  it('should not create a new auction if the auction house is paused and unpaused while an auction is ongoing', async () => {});
-  it('should create a new auction if the auction house is paused and unpaused after an auction is settled', async () => {
-    // @enx - description implies auction is stopped when minter is updated
+  it('should not create a new auction if the auction house is paused and unpaused while an auction is ongoing', async () => {
+    const startTx = await auctionHouse.unpause();
+    await startTx.wait();
+
+    const auction = await auctionHouse.auction();
+    expect(auction.startTime.toNumber()).to.be.greaterThan(0);
+
+    const pauseTx = await auctionHouse.pause();
+    await pauseTx.wait();
+    const unpauseTx = await auctionHouse.unpause();
+    await unpauseTx.wait();
+
+    const newAuction = await auctionHouse.auction();
+    expect(newAuction.startTime.toNumber()).to.equal(auction.startTime.toNumber());
+    expect(newAuction.tokenId).to.equal(auction.tokenId);
   });
-  it('should settle the current auction and pause the contract if the minter is updated while the auction house is unpaused', async () => {});
+  it('should create a new auction if the auction house is paused and auction settled, then unpaused', async () => {
+    await (await auctionHouse.unpause()).wait();
+    const { tokenId, startTime } = await auctionHouse.auction();
+    await auctionHouse.connect(bidderA).createBid(tokenId, {
+      value: RESERVE_PRICE,
+    });
+    const pauseTx = await auctionHouse.pause();
+    await pauseTx.wait();
+    await ethers.provider.send('evm_increaseTime', [60 * 60 * 25]); // Add 25 hours
+    await auctionHouse.connect(bidderA).settleAuction();
+
+    const unpauseTx = await auctionHouse.unpause();
+    await unpauseTx.wait();
+
+    // check that the auction house is running an auction
+    const auction = await auctionHouse.auction();
+    expect(auction.startTime.toNumber()).to.be.greaterThan(startTime.toNumber() + TIME_BUFFER);
+    expect(auction.tokenId).to.equal(tokenId.add(1));
+  });
 
   // artwork
   describe('artwork', () => {
